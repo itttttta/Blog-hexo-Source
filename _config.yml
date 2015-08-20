@@ -5,11 +5,11 @@
 # Site
 title: Vanday的博客
 subtitle:
-description: 生活在天朝,怎能不奋斗
+description: 根本没有正确的选择,我们只是努力奋斗,把当初的选择变正确
 author: Wangda
 language: zh-Hans
 timezone:
-
+email: 11951691@qq.com
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
 url: http://yoursite.com

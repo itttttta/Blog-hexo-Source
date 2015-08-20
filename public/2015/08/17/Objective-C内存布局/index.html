@@ -24,7 +24,7 @@
 <link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
 
 
-    <meta name="description" content="生活在天朝,怎能不奋斗" />
+    <meta name="description" content="根本没有正确的选择,我们只是努力奋斗,把当初的选择变正确" />
 
 
 
@@ -42,14 +42,16 @@
 <meta name="description" content="对象(object)即一块内存，本文要探讨的是一个Objective-C对象在内存的布局(layout)问题，水果的官方文档有说，一个类(class)如果不需要从NSObject继承其某些特定的行为是不用继承NSObject的，这里我将讨论限制在继承了NSObject的类的对象范围内。
 首先来看一下，NSObject的定义：@interface NSObject &amp;lt;NSObject&amp;gt;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Objective-C内存布局">
+<meta property="og:title" content="Objective-C内存布局(转)">
 <meta property="og:url" content="http://yoursite.com/2015/08/17/Objective-C内存布局/index.html">
 <meta property="og:site_name" content="Vanday的博客">
 <meta property="og:description" content="对象(object)即一块内存，本文要探讨的是一个Objective-C对象在内存的布局(layout)问题，水果的官方文档有说，一个类(class)如果不需要从NSObject继承其某些特定的行为是不用继承NSObject的，这里我将讨论限制在继承了NSObject的类的对象范围内。
 首先来看一下，NSObject的定义：@interface NSObject &amp;lt;NSObject&amp;gt;">
-<meta property="og:updated_time" content="2015-08-17T10:17:25.000Z">
+<meta property="og:image" content="https://app.yinxiang.com/shard/s39/res/c2c0004f-7702-4978-b2d2-c41482f75344.jpg?resizeSmall&width=846">
+<meta property="og:image" content="https://app.yinxiang.com/shard/s39/res/2eaaccde-e5d6-4635-a3c5-982bfaaa0892.png?resizeSmall&width=846">
+<meta property="og:updated_time" content="2015-08-18T08:31:17.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Objective-C内存布局">
+<meta name="twitter:title" content="Objective-C内存布局(转)">
 <meta name="twitter:description" content="对象(object)即一块内存，本文要探讨的是一个Objective-C对象在内存的布局(layout)问题，水果的官方文档有说，一个类(class)如果不需要从NSObject继承其某些特定的行为是不用继承NSObject的，这里我将讨论限制在继承了NSObject的类的对象范围内。
 首先来看一下，NSObject的定义：@interface NSObject &amp;lt;NSObject&amp;gt;">
 
@@ -61,7 +63,7 @@
   };
 </script>
 
-  <title> Objective-C内存布局 | Vanday的博客 </title>
+  <title> Objective-C内存布局(转) | Vanday的博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -186,7 +188,7 @@
           
           
             
-              Objective-C内存布局
+              Objective-C内存布局(转)
             
           
         </h1>
@@ -226,7 +228,46 @@
      <span class="class"><span class="keyword">Class</span>    <span class="title">isa</span>;                      </span>
  } 
 </code></pre><p>(由于我们讨论的是内存布局，因此将其方法的定义撇开)</p>
-<p><strong>在Objective-C中，@interface关键字可以看着是C语言中的struct关键字的别名，当然他还会有一些其它功能，比如说让编译器知道@interface后后面的是一个Objective-C的类的名字等。但就我们研究其内存布局来说，我们简单地将其替换为struct，并将protocal定义去掉。因此，NSObject的定义就是样：</strong><br>struct NSObject{<br> 　　Class isa;<br>}</p>
+<p>在Objective-C中，@interface关键字可以看着是C语言中的struct关键字的别名，当然他还会有一些其它功能，比如说让编译器知道@interface后后面的是一个Objective-C的类的名字等。但就我们研究其内存布局来说，我们简单地将其替换为struct，并将protocal定义去掉。因此，NSObject的定义就是样：</p>
+<pre><code><span class="class"><span class="keyword">struct</span> <span class="title">NSObject</span></span>{
+    Class isa;
+}
+</code></pre><p> 那个这个Class又是什么呢？在objc.h中我们发现其仅仅是一个结构(struct)指针的typedef定义:</p>
+<pre><code>typedefstruct objc_class *<span class="class"><span class="keyword">Class</span>;</span>
+</code></pre><p> 因此，NSObject的定义就像这个样子：</p>
+<pre><code><span class="class"><span class="keyword">struct</span> <span class="title">NSObject</span></span>{
+    objc_class *isa
+}
+</code></pre><p>isa就是“isa”，对于所有继承了NSObject的类其对象也都有一个isa指针。这个isa指针指向的东西(先这样称呼它吧)就是关于这个对象所属的类的定义。</p>
+<p>　　刨根问底是我们程序员的天性：那object_class的定义是什么呢？由于水果公司现在将这个定义隐藏起来了，不过我依然有办法，用XCode随便建一个工程，在某个变量定义处打个debug断点，然后通过XCode的GUI或者用gdb的p命令查看其结构，这里我使用gdb打印一个UINavigationController变量，我们看到只是一个指针而已：</p>
+<pre><code>(gdb) p dialUNC
+<span class="variable">$1</span> = (UINavigationController *) <span class="number">0x8e8be80</span>
+</code></pre><p>对指针解引用再打印，我们发现里面有很多很多东西，大致如下(由于gdb打印出来内容太多，省略号表示省略了一些内容)：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">(gdb) p *dialUNC</span><br><span class="line">$<span class="number">1</span> = &#123;</span><br><span class="line">  &lt;UIViewController&gt; = &#123;</span><br><span class="line">    &lt;UIResponder&gt; = &#123;</span><br><span class="line">      &lt;NSObject&gt; = &#123;</span><br><span class="line">        isa = <span class="number">0x1bebc1c</span></span><br><span class="line">      &#125;, &lt;No data fields&gt;&#125;, </span><br><span class="line">members of UIViewController: </span><br><span class="line">    _view = <span class="number">0xd5dab60</span>, </span><br><span class="line">    _tabBarItem = <span class="number">0x0</span>, </span><br><span class="line">    _navigationItem = <span class="number">0x0</span>, </span><br><span class="line">    _toolbarItems = <span class="number">0x0</span>, </span><br><span class="line">    _title = <span class="number">0x0</span>, </span><br><span class="line">    _nibName = <span class="number">0x0</span>, </span><br><span class="line">    ......(此处省略若干成员，课蜜黄蜂注)</span><br><span class="line">  &#125;, </span><br><span class="line">members of UINavigationController: </span><br><span class="line">  _containerView = <span class="number">0xd5dab60</span>, </span><br><span class="line">  _navigationBar = <span class="number">0xd5dad40</span>, </span><br><span class="line">  _navigationBarClass = <span class="number">0x1beb4d8</span>, </span><br><span class="line">  _toolbar = <span class="number">0x0</span>, </span><br><span class="line">  _navigationTransitionView = <span class="number">0xd5d2f10</span>, </span><br><span class="line">  _currentScrollContentInsetDelta = &#123;</span><br><span class="line">    top = <span class="number">0</span>, </span><br><span class="line">    left = <span class="number">0</span>, </span><br><span class="line">    bottom = <span class="number">0</span>, </span><br><span class="line">    right = <span class="number">0</span></span><br><span class="line">  &#125;, </span><br><span class="line">  _previousScrollContentInsetDelta = &#123;</span><br><span class="line">    top = <span class="number">0</span>, </span><br><span class="line">    left = <span class="number">0</span>, </span><br><span class="line">    bottom = <span class="number">0</span>, </span><br><span class="line">    right = <span class="number">0</span></span><br><span class="line">  &#125;, </span><br><span class="line">  ......（此处省略若干成员，课蜜黄蜂注） </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意gdb打印结果中的黑体字，从中我们可以看到，UINavigationController内存中先是存放了父类的实例变量再存放子类的实例变量。最前面的那个isa指针就是在NSObject中所定义的。由于Objective-C中没有多继承，因此其内存布局还是很简单的，就是：最前面有个isa指针，然后父类的实例变量存放在子类的成员变量之前，so easy!!!但还有一个问题，我们很好奇，这个isa是什么呢？对它解引用再打印内容大致如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) p *dialUNC-&gt;isa</span><br><span class="line">$<span class="number">2</span> = &#123;</span><br><span class="line">    isa = <span class="number">0x1bebc30</span>, </span><br><span class="line">    super_class = <span class="number">0x1bebba4</span>, </span><br><span class="line">    name = <span class="number">0xd5dd8d0</span> <span class="string">"?"</span>, </span><br><span class="line">    version = <span class="number">45024840</span>, </span><br><span class="line">    info = <span class="number">223886032</span>, </span><br><span class="line">    instance_size = <span class="number">43102048</span>, </span><br><span class="line">    ivars = <span class="number">0x1bebb7c</span>, </span><br><span class="line">    methodLists = <span class="number">0xd5dab10</span>, </span><br><span class="line">    cache = <span class="number">0x2af0648</span>, </span><br><span class="line">    protocols = <span class="number">0xd584050</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这就是一个Class或者说objc_class结构在内存中的样子。其实在Objective-C2.0之前这个结构的定义是暴露给用户的，但在Objective-C2.0中，水果公司将它隐藏起来了。经过在网上的查找，发现在Objective-C2.0之前其定义大致如下：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">struct</span> objc_class &#123;</span><br><span class="line">    <span class="title">Class</span> isa;</span><br><span class="line">    </span><br><span class="line">    <span class="title">Class</span> super_class;</span><br><span class="line">    </span><br><span class="line">    <span class="title">const</span> char *name;</span><br><span class="line">    </span><br><span class="line">    <span class="title">long</span> version;</span><br><span class="line">    <span class="title">long</span> <span class="built_in">info</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="title">long</span> instance_size;</span><br><span class="line">    <span class="title">struct</span> objc_ivar_list *ivars;</span><br><span class="line">    <span class="title">struct</span> objc_method_list **methodLists; </span><br><span class="line">    </span><br><span class="line">    <span class="title">struct</span> objc_cache *cache;</span><br><span class="line">    <span class="title">struct</span> objc_protocol_list *protocols;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因此简单地说，一个objc_class对象包括一个类的：父类定义(super_class), 变量列表，方法列表，还有实现了哪些协议(Protocal)等等。</p>
+<p>　　“等一下”，有人要喊了，”我们刚才在说一个对象里面有一个isa指针，这个指针的定义是objc_class,肿么这个objc-class中还有一个isa？”</p>
+<p>　　在这里有必要跟大家啰嗦一大段文字了：在Objective-C中任何的类定义都是对象。即在程序启动的时候任何类定义都对应于一块内存。在编译的时候，编译器会给每一个类生成一个且只生成一个”描述其定义的对象”,也就是水果公司说的类对象(class object),他是一个单例(singleton), 而我们在C++等语言中所谓的对象，叫做实例对象(instance object)。对于实例对象我们不难理解，但类对象(class object)是干什么吃的呢？我们知道Objective-C是门很动态的语言，因此程序里的所有实例对象(instace objec)都是在运行时由Objective-C的运行时库生成的，而这个类对象(class object)就是运行时库用来创建实例对象(instance object)的依据。</p>
+<p>　　让我们来理一下，到目前为止，我们知道了：任何直接或间接继承了NSObject的类，它的实例对象(instacne objec)中都有一个isa指针，指向它的类对象(class object)。这个类对象(class object)中存储了关于这个实例对象(instace object)所属的类的定义的一切：包括变量，方法，遵守的协议等等。</p>
+<p>　　再回到之前的问题，肿么这个实例对象(instance object)的isa指针指向的类对象(class object)里面还有一个isa呢？</p>
+<p>　　这个类对象(class objec)的isa指向的依然是一个objc-class，它就是“元类对象”(metaclass object)，它和类对象(class object)的关系是这样的:  类对象(class object)中包含了类的实例变量，实例方法的定义，而元类对象(metaclass object)中包括了类的类方法(也就是C++中的静态方法)的定义。类对象和元类对象中水果公司当然还会包含一些其它的东西，以后也可能添加其它的内容，但对于我们了解其内存布局来说，只需要记住：类对象存的是关于实例对象的信息(变量，实例方法等)，而元类对象(metaclass object)中存储的是关于类的信息(类的版本，名字，类方法等)。要注意的是，类对象(class object)和元类对象(metaclass object)的定义都是objc_class结构，其不同仅仅是在用途上，比如其中的方法列表在类对象(instance object)中保存的是实例方法(instance method)，而在元类对象(metaclass object)中则保存的是类方法(class method)。关于元类对象水果官方文档” The Objective-‐C Programming Language “P29页顶部描述如下：</p>
+<p>　　Note: The compiler also builds a metaclass object for each class. It describes the class object just as the class object describes instances of the class. But while you can send messages to instances and to the class object, the metaclass object is used only internally by the runtime system. </p>
+<p>　　这一大段文字好像有点绕，那我们来看一个例子。下面我以一个有4层继承关系的类的实例变量的内存布局为例。　继承关系如下：<br>　　<br>    <img src="https://app.yinxiang.com/shard/s39/res/c2c0004f-7702-4978-b2d2-c41482f75344.jpg?resizeSmall&amp;width=846" alt="id"><br>　　<br>　　通过打印D3类的一个实例变量并将那些isa,super_class的地地址记录下来整理得到的关系如下图:</p>
+<p><img src="https://app.yinxiang.com/shard/s39/res/2eaaccde-e5d6-4635-a3c5-982bfaaa0892.png?resizeSmall&amp;width=846" alt="id"></p>
+<p>在这里对上图进行一下解释： 矩形表示对象(object),即一块内存;箭头表示指针，isa即isa指针，super表示super_class指针，这些指针是箭头尾部对象(object)的成员变量，除了“D3实例对象”(最左边的对象)，其它对象都是在程序一启动就创建在在内存中的了而且都是单例(singleton)，类对象(class object)和元类对象(metaclass object)只是用途不一样，其定义都为objc_class结构</p>
+<p>　　D3对象的内存布局为:从前往后为isa,D1的实例变量,D2的实例变量,D3的实例变量。而isa指针指向的内容就是上图中的“D3类对象”。对于上图，任何类C如果直接或间接继承NSObject 或者其就是NSObject,则有如下结论：</p>
+<p>　　<strong>1. 类C的类对象(class object)的super_class都指向了类C父类的类对象(class object), NSObject的类对像的super_class指向0x0</strong></p>
+<p><strong>　　2. 类C的类对象(class object)的isa指针都指向他的元类对象(metaclass object)
+</strong></p>
+<p><strong>　　3. 类C的元类对象(metaclass object)的super_class指针指向父类的元类对象(metaclass object), 例外：NSObject的元类对象(metaclass object)的super_class指向NSObject的类对象(class object).
+</strong></p>
+<p><strong>　　4. 类C的元类对象(metaclass object)的isa指针指都指向NSObject的元类对象(metaclass object)
+</strong><br>　　NSObject的实例对象(虽然它没有实例变量和实例方法但这个对象仍然存在)其super_class指向地址0x0，因为NSObject没有父类, 这满足上面的结论1。　<br>　　NSObject的实例对象的isa指向了NSObject的元类对象(metaclass object)，这满足上面结论2。　　<br>　　NSObject的元类对象(metaclass object)指向了自己，这也满足上面结论4。　　<br>　　但NSObject的元类对象(metaclass object)的super_class指向了NSObject的类对象(class object)，我没有看出什么规律可言或者苹果为什么要这样做，我只能说“Apple just do this, I don’t know why”（如果有人知道，麻烦告诉我一下，多谢）。我认为水果的工程师们只是简单地又将它指向NSObject的类对象(class object)，其实我认为这个super_class指针赋0x0也未尝不可(这样就满足上面的结论3， 因为NSObject没有父类，所以它的metaclass object的super_class指向0x0，我觉得这样更统一。当然只是我的yy罢了)。 </p>
+<p><code>原文地址:http://www.cnblogs.com/csutanyu/archive/2011/12/12/Objective-C_memor_layout.html</code></p>
+<p>　　</p>
 </span>
       
     </div>
@@ -266,7 +307,7 @@
     <div class="post-spread">
       
         <div class="ds-share flat" data-thread-key="2015/08/17/Objective-C内存布局/"
-     data-title="Objective-C内存布局"
+     data-title="Objective-C内存布局(转)"
      data-content=""
      data-url="http://yoursite.com/2015/08/17/Objective-C内存布局/">
   <div class="ds-share-inline">
@@ -299,7 +340,7 @@
           <div class="comments" id="comments">
             
               <div class="ds-thread" data-thread-key="2015/08/17/Objective-C内存布局/"
-                   data-title="Objective-C内存布局" data-url="http://yoursite.com/2015/08/17/Objective-C内存布局/">
+                   data-title="Objective-C内存布局(转)" data-url="http://yoursite.com/2015/08/17/Objective-C内存布局/">
               </div>
             
           </div>
@@ -335,11 +376,11 @@
           <img class="site-author-image" src="/images/avatar.jpeg" alt="Wangda" itemprop="image"/>
           <p class="site-author-name" itemprop="name">Wangda</p>
         </div>
-        <p class="site-description motion-element" itemprop="description">生活在天朝,怎能不奋斗</p>
+        <p class="site-description motion-element" itemprop="description">根本没有正确的选择,我们只是努力奋斗,把当初的选择变正确</p>
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -353,7 +394,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
@@ -419,10 +460,11 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
-  </a>
+    NexT.Mist</a>
+	&nbsp;|&nbsp; 本站总访问量<span id="busuanzi_value_site_pv"></span>次
 </div>
-
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
 
  </div>
     </footer>

@@ -1,99 +1,231 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title><![CDATA[Vanday的博客]]></title>
+<!doctype html>
+<html class="theme-next use-motion theme-next-mist">
+<head>
   
-  <link href="/atom.xml" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2015-08-20T07:37:58.000Z</updated>
-  <id>http://yoursite.com/</id>
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
+
+
+    <meta name="description" content="根本没有正确的选择,我们只是努力奋斗,把当初的选择变正确" />
+
+
+
+  <meta name="keywords" content="Objective-C," />
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Vanday的博客" type="application/atom+xml" />
+
+
+
+  <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
+
+
+<meta name="description" content="本篇转载于:美团技术博客 
+摘要无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解Objective-C:Category">
+<meta property="og:url" content="http://yoursite.com/2015/08/18/深入理解Objective-C：Category/index.html">
+<meta property="og:site_name" content="Vanday的博客">
+<meta property="og:description" content="本篇转载于:美团技术博客 
+摘要无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功">
+<meta property="og:image" content="http://tech.meituan.com/img/diveintocategory/project.png">
+<meta property="og:image" content="http://tech.meituan.com/img/diveintocategory/environment_vars.png">
+<meta property="og:image" content="http://tech.meituan.com/img/diveintocategory/compile1.png">
+<meta property="og:image" content="http://tech.meituan.com/img/diveintocategory/compile2.png">
+<meta property="og:updated_time" content="2015-08-19T08:32:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解Objective-C:Category">
+<meta name="twitter:description" content="本篇转载于:美团技术博客 
+摘要无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: 'hide'
+  };
+</script>
+
+  <title> 深入理解Objective-C:Category | Vanday的博客 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
   
-  <author>
-    <name><![CDATA[Wangda]]></name>
-    
-  </author>
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?7622edc6ec2ac8f8fb36c43f89a22edf";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><h1 class="site-meta">
+  <span class="logo-line-before"><i></i></span>
+  <a href="/" class="brand" rel="start">
+      <span class="logo">
+        <i class="icon-next-logo"></i>
+      </span>
+      <span class="site-title">Vanday的博客</span>
+  </a>
+  <span class="logo-line-after"><i></i></span>
+</h1>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
   
-  <generator uri="http://hexo.io/">Hexo</generator>
+
   
-  <entry>
-    <title><![CDATA[block写递归]]></title>
-    <link href="http://yoursite.com/2015/08/20/block%E5%86%99%E9%80%92%E5%BD%92/"/>
-    <id>http://yoursite.com/2015/08/20/block写递归/</id>
-    <published>2015-08-20T07:34:42.000Z</published>
-    <updated>2015-08-20T07:37:58.000Z</updated>
-    <content type="html"><![CDATA[<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">static</span> <span class="built_in">int</span> (^sumBlock)(<span class="built_in">int</span>) = ^ (<span class="built_in">int</span> <span class="built_in">num</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">num</span> == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">num</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">num</span> + sumBlock(<span class="built_in">num</span> - <span class="number">1</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p><strong>注意，要做到自己调用自己，需要能够准确的在内存中找到 block 的函数入口，因此需要使用 static 修饰符号，其他就没啥了</strong></p>
-<ul>
-<li>每调用一次自己，系统都会开辟一个栈桢记录临时变量和参数</li>
-<li>递归次数过多，会出现栈溢出错误</li>
-<li>移动开发中不建议使用递归算法，现在主线程栈区只有 512K</li>
-</ul>
-]]></content>
-    <summary type="html">
-    <![CDATA[<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class=]]>
-    </summary>
-    
-      <category term="Block" scheme="http://yoursite.com/tags/Block/"/>
-    
-  </entry>
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon icon-next-home"></i> <br />
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            <i class="menu-item-icon icon-next-archives"></i> <br />
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            <i class="menu-item-icon icon-next-tags"></i> <br />
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            <i class="menu-item-icon icon-next-categories"></i> <br />
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            <i class="menu-item-icon icon-next-about"></i> <br />
+            关于
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
   
-  <entry>
-    <title><![CDATA[隐藏UInavigationBar下的黑边]]></title>
-    <link href="http://yoursite.com/2015/08/19/%E9%9A%90%E8%97%8FUInavigationBar%E4%B8%8B%E7%9A%84%E9%BB%91%E8%BE%B9/"/>
-    <id>http://yoursite.com/2015/08/19/隐藏UInavigationBar下的黑边/</id>
-    <published>2015-08-19T08:55:22.000Z</published>
-    <updated>2015-08-19T08:59:18.000Z</updated>
-    <content type="html"><![CDATA[<p>本文参考<a href="http://stackoverflow.com/questions/19226965/how-to-hide-ios7-uinavigationbar-1px-bottom-line" target="_blank" rel="external">StackOverFlow</a></p>
-<h3 id="在基类中">在基类中</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UINavigationBar</span> *navigationBar = <span class="keyword">self</span><span class="variable">.navigationController</span><span class="variable">.navigationBar</span>;</span><br><span class="line"> [navigationBar setBackgroundImage:[<span class="built_in">UIImage</span> imageWithColor:KTHEME_COLOR size:<span class="built_in">CGSizeMake</span>(SCREEN_WIDTH, <span class="number">1</span>)]</span><br><span class="line">                    forBarPosition:<span class="built_in">UIBarPositionAny</span></span><br><span class="line">                        barMetrics:<span class="built_in">UIBarMetricsDefault</span>];</span><br><span class="line"> [navigationBar setShadowImage:[<span class="built_in">UIImage</span> new]];</span><br></pre></td></tr></table></figure>
-<p>imageWithColor 是一个分类在前边文章中出现过</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>本文参考<a href="http://stackoverflow.com/questions/19226965/how-to-hide-ios7-uinavigationbar-1px-bottom-line" target="_blank" rel="external"]]>
-    </summary>
-    
-      <category term="实用小工具" scheme="http://yoursite.com/tags/%E5%AE%9E%E7%94%A8%E5%B0%8F%E5%B7%A5%E5%85%B7/"/>
-    
-  </entry>
+
   
-  <entry>
-    <title><![CDATA[ImageWithColor]]></title>
-    <link href="http://yoursite.com/2015/08/19/ImageWithColor/"/>
-    <id>http://yoursite.com/2015/08/19/ImageWithColor/</id>
-    <published>2015-08-19T08:23:27.000Z</published>
-    <updated>2015-08-19T08:29:56.000Z</updated>
-    <content type="html"><![CDATA[<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">UIImage</span> (<span class="title">Color</span>)  </span></span><br><span class="line">  </span><br><span class="line">+ (<span class="built_in">UIImage</span> *)imageWithColor:(<span class="built_in">UIColor</span> *)color size:(<span class="built_in">CGSize</span>)size;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">@end</span>  </span><br><span class="line">  </span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIImage</span> (<span class="title">Color</span>)  </span></span><br><span class="line">  </span><br><span class="line">+ (<span class="built_in">UIImage</span> *)imageWithColor:(<span class="built_in">UIColor</span> *)color size:(<span class="built_in">CGSize</span>)size  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">CGRect</span> rect = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, size<span class="variable">.width</span>, size<span class="variable">.height</span>);  </span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContext</span>(rect<span class="variable">.size</span>);  </span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">UIGraphicsGetCurrentContext</span>();  </span><br><span class="line">    <span class="built_in">CGContextSetFillColorWithColor</span>(context,color<span class="variable">.CGColor</span>);  </span><br><span class="line">    <span class="built_in">CGContextFillRect</span>(context, rect);  </span><br><span class="line">    <span class="built_in">UIImage</span> *img = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();  </span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">return</span> img;  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
-]]></content>
-    <summary type="html">
-    <![CDATA[<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span ]]>
-    </summary>
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
     
-      <category term="实用小工具" scheme="http://yoursite.com/tags/%E5%AE%9E%E7%94%A8%E5%B0%8F%E5%B7%A5%E5%85%B7/"/>
-    
-  </entry>
-  
-  <entry>
-    <title></title>
-    <link href="http://yoursite.com/2015/08/19/%E5%A6%82%E4%BD%95%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E6%B5%8F%E8%A7%88%E5%99%A8/"/>
-    <id>http://yoursite.com/2015/08/19/如何建立一个简单的图片浏览器/</id>
-    <published>2015-08-19T03:50:09.000Z</published>
-    <updated>2015-08-19T03:50:09.000Z</updated>
-    <content type="html"><![CDATA[<p>title: 如何建立一个简单的图片浏览器<br>date: 2015-08-19 11:47:44<br>type: “tags”<br>tags: 自定义控件</p>
-<p>##构建一个简单的photoBorwser</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>title: 如何建立一个简单的图片浏览器<br>date: 2015-08-19 11:47:44<br>type: “tags”<br>tags: 自定义控件</p>
-<p>##构建一个简单的photoBorwser</p>
-]]>
-    </summary>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[深入理解Objective-C:Category]]></title>
-    <link href="http://yoursite.com/2015/08/18/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Objective-C%EF%BC%9ACategory/"/>
-    <id>http://yoursite.com/2015/08/18/深入理解Objective-C：Category/</id>
-    <published>2015-08-18T09:31:12.000Z</published>
-    <updated>2015-08-19T08:32:50.000Z</updated>
-    <content type="html"><![CDATA[<p>本篇转载于:<a href="http://tech.meituan.com/DiveIntoCategory.html" target="_blank" rel="external">美团技术博客</a> </p>
+
+  <article class="post post-type-tags " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
+              深入理解Objective-C:Category
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于
+          <time itemprop="dateCreated" datetime="2015-08-18T17:31:12+08:00" content="2015-08-18">
+            2015-08-18
+          </time>
+        </span>
+
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/18/深入理解Objective-C：Category/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/18/深入理解Objective-C：Category/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p>本篇转载于:<a href="http://tech.meituan.com/DiveIntoCategory.html" target="_blank" rel="external">美团技术博客</a> </p>
 <h2 id="摘要">摘要</h2><p>无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功能繁复的大型APP到简单的应用，catagory无处不在。本文对category做了比较全面的整理，希望对读者有所裨益。</p>
 <h2 id="简介">简介</h2><p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了category在runtime层的实现原理以及和category相关的方方面面，内容包括：</p>
 <ul>
@@ -168,170 +300,470 @@
 <figure class="highlight openscad"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void <span class="built_in">*</span>objc_destructInstance<span class="params">(id obj)</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="params">(obj)</span> &#123;</span><br><span class="line">        Class isa_gen = _object_getClass<span class="params">(obj)</span>;</span><br><span class="line">        class_t <span class="built_in">*</span>isa = newcls<span class="params">(isa_gen)</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Read all of the flags at once for performance.</span></span><br><span class="line">        bool cxx = hasCxxStructors<span class="params">(isa)</span>;</span><br><span class="line">        bool assoc = <span class="built_in">!</span>UseGC &amp;&amp; _class_instancesHaveAssociatedObjects<span class="params">(isa_gen)</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// This order is important.</span></span><br><span class="line">        <span class="keyword">if</span> <span class="params">(cxx)</span> object_cxxDestruct<span class="params">(obj)</span>;</span><br><span class="line">        <span class="keyword">if</span> <span class="params">(assoc)</span> _object_remove_assocations<span class="params">(obj)</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="params">(!UseGC)</span> objc_clear_deallocating<span class="params">(obj)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>嗯，runtime的销毁对象函数objc_destructInstance里面会判断这个对象有没有关联对象，如果有，会调用_object_remove_assocations做关联对象的清理工作。</p>
 <h2 id="后记">后记</h2><p>正如侯捷先生所讲-“源码面前，了无秘密”，Apple的Cocoa Touch框架虽然并不开源，但是Objective-C的runtime和Core Foundation却是完全开放源码的(在<a href="http://www.opensource.apple.com/tarballs/" target="_blank" rel="external">http://www.opensource.apple.com/tarballs/</a>可以下载到全部的开源代码)。<br>本系列runtime源码学习将会持续更新，意犹未尽的同学可以自行到上述网站下载源码学习。行笔简陋，如有错误，望指正。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>本篇转载于:<a href="http://tech.meituan.com/DiveIntoCategory.html" target="_blank" rel="external">美团技术博客</a> </p>
-<h2 id="摘要">摘要</h2><p>无论一个类设]]>
-    </summary>
-    
-      <category term="Objective-C" scheme="http://yoursite.com/tags/Objective-C/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[IOS-UI-Tips(-)之UITabelviewCell-Height]]></title>
-    <link href="http://yoursite.com/2015/08/18/IOS-UI-Tips-%E4%B9%8BUITabelviewCell-Height/"/>
-    <id>http://yoursite.com/2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/</id>
-    <published>2015-08-18T03:36:07.000Z</published>
-    <updated>2015-08-18T06:04:35.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="UITableView中cell高度计算问题之">UITableView中cell高度计算问题之</h2><p>如何解决类似于微博cell高度问题</p>
-<h3 id="首先我们先确定一下两个函数问题">首先我们先确定一下两个函数问题</h3><pre><code><span class="pp">- <span class="params">(<span class="variable">CGFloat</span>)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView heightForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath
+</span>
+      
+    </div>
 
-- <span class="params">(<span class="variable">UITableViewCell</span> *)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView cellForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>根据我们一开始学习IOS时候的经验，height肯定是在UITableViewCell前面运行的。<br>实际上height虽说是在cell前面运行的，但是，cell运行完了以后，会再一次调用height,这个height才是cell的最终高度。这也就是说在整个tableview的刷新过程中每一个cell对应的height函数会调用2次,一前一后,这也是今天如何解决不规则cell高度的关键。</p>
-<h3 id="我们拿到数据源_DataArray_执行_[self-tableView_reloadData]会执行">我们拿到数据源 DataArray 执行 [self.tableView reloadData]会执行</h3><pre><code><span class="pp">- <span class="params">(<span class="variable">CGFloat</span>)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView heightForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>这个会遍历数组中的所有object 这个时候我们就可以在这里计算高度了(label、button、imageview)等,然后保存在mode中<br>等循环结束以后会执行</p>
-<pre><code><span class="pp">- <span class="params">(<span class="variable">UITableViewCell</span> *)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView cellForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>最后再调用</p>
-<pre><code><span class="pp">- <span class="params">(<span class="variable">CGFloat</span>)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView heightForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>现实在UITableView上。有些同学会觉得，运行了2次是不是很麻烦,首先呢 ，我想说的是，你知道这个调用顺序以后 可以优化时间 比如第一次计算高度的时候 就可以保存在模型中。后面2次都可以直接拿过来用。<br>其次,对于文字高度比较好计算，但是对于单张图片的高度 ，这个就有点头疼了。曾经我问过一个朋友，他说服务器会直接反悔image的size 好吧 ，这个有这些数据的朋友们，当我没说。<br>其次呢，没有怎么办呢，这个就是2次运行height函数的好处了。</p>
-<h3 id="对于第一次函数_我们可以下载图片的缩略图以便在后面的计算高度中可以直接使用">对于第一次函数 我们可以下载图片的缩略图以便在后面的计算高度中可以直接使用</h3>]]></content>
-    <summary type="html">
-    <![CDATA[<h2 id="UITableView中cell高度计算问题之">UITableView中cell高度计算问题之</h2><p>如何解决类似于微博cell高度问题</p>
-<h3 id="首先我们先确定一下两个函数问题">首先我们先确定一下两个函数问题</h3><pre><cod]]>
-    </summary>
-    
-      <category term="UI" scheme="http://yoursite.com/tags/UI/"/>
-    
-  </entry>
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Objective-C/" rel="tag">#Objective-C</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/19/如何建立一个简单的图片浏览器/" rel="prev"></a>
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/" rel="next">IOS-UI-Tips(-)之UITabelviewCell-Height</a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2015/08/18/深入理解Objective-C：Category/"
+     data-title="深入理解Objective-C:Category"
+     data-content=""
+     data-url="http://yoursite.com/2015/08/18/深入理解Objective-C：Category/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+            <!-- 多说热评文章-->
+            <p>热评文章</p>
+            <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2015/08/18/深入理解Objective-C：Category/"
+                   data-title="深入理解Objective-C:Category" data-url="http://yoursite.com/2015/08/18/深入理解Objective-C：Category/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
   
-  <entry>
-    <title><![CDATA[Objective-C内存布局(转)]]></title>
-    <link href="http://yoursite.com/2015/08/17/Objective-C%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"/>
-    <id>http://yoursite.com/2015/08/17/Objective-C内存布局/</id>
-    <published>2015-08-17T10:06:49.000Z</published>
-    <updated>2015-08-18T08:31:17.000Z</updated>
-    <content type="html"><![CDATA[<p>对象(object)即一块内存，本文要探讨的是一个Objective-C对象在内存的布局(layout)问题，水果的官方文档有说，一个类(class)如果不需要从NSObject继承其某些特定的行为是不用继承NSObject的，这里我将讨论限制在继承了NSObject的类的对象范围内。</p>
-<h3 id="首先来看一下，NSObject的定义：">首先来看一下，NSObject的定义：</h3><pre><code>@<span class="class"><span class="keyword">interface</span> <span class="title">NSObject</span> &lt;<span class="title">NSObject</span>&gt; {    </span>
-     <span class="class"><span class="keyword">Class</span>    <span class="title">isa</span>;                      </span>
- } 
-</code></pre><p>(由于我们讨论的是内存布局，因此将其方法的定义撇开)</p>
-<p>在Objective-C中，@interface关键字可以看着是C语言中的struct关键字的别名，当然他还会有一些其它功能，比如说让编译器知道@interface后后面的是一个Objective-C的类的名字等。但就我们研究其内存布局来说，我们简单地将其替换为struct，并将protocal定义去掉。因此，NSObject的定义就是样：</p>
-<pre><code><span class="class"><span class="keyword">struct</span> <span class="title">NSObject</span></span>{
-    Class isa;
-}
-</code></pre><p> 那个这个Class又是什么呢？在objc.h中我们发现其仅仅是一个结构(struct)指针的typedef定义:</p>
-<pre><code>typedefstruct objc_class *<span class="class"><span class="keyword">Class</span>;</span>
-</code></pre><p> 因此，NSObject的定义就像这个样子：</p>
-<pre><code><span class="class"><span class="keyword">struct</span> <span class="title">NSObject</span></span>{
-    objc_class *isa
-}
-</code></pre><p>isa就是“isa”，对于所有继承了NSObject的类其对象也都有一个isa指针。这个isa指针指向的东西(先这样称呼它吧)就是关于这个对象所属的类的定义。</p>
-<p>　　刨根问底是我们程序员的天性：那object_class的定义是什么呢？由于水果公司现在将这个定义隐藏起来了，不过我依然有办法，用XCode随便建一个工程，在某个变量定义处打个debug断点，然后通过XCode的GUI或者用gdb的p命令查看其结构，这里我使用gdb打印一个UINavigationController变量，我们看到只是一个指针而已：</p>
-<pre><code>(gdb) p dialUNC
-<span class="variable">$1</span> = (UINavigationController *) <span class="number">0x8e8be80</span>
-</code></pre><p>对指针解引用再打印，我们发现里面有很多很多东西，大致如下(由于gdb打印出来内容太多，省略号表示省略了一些内容)：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">(gdb) p *dialUNC</span><br><span class="line">$<span class="number">1</span> = &#123;</span><br><span class="line">  &lt;UIViewController&gt; = &#123;</span><br><span class="line">    &lt;UIResponder&gt; = &#123;</span><br><span class="line">      &lt;NSObject&gt; = &#123;</span><br><span class="line">        isa = <span class="number">0x1bebc1c</span></span><br><span class="line">      &#125;, &lt;No data fields&gt;&#125;, </span><br><span class="line">members of UIViewController: </span><br><span class="line">    _view = <span class="number">0xd5dab60</span>, </span><br><span class="line">    _tabBarItem = <span class="number">0x0</span>, </span><br><span class="line">    _navigationItem = <span class="number">0x0</span>, </span><br><span class="line">    _toolbarItems = <span class="number">0x0</span>, </span><br><span class="line">    _title = <span class="number">0x0</span>, </span><br><span class="line">    _nibName = <span class="number">0x0</span>, </span><br><span class="line">    ......(此处省略若干成员，课蜜黄蜂注)</span><br><span class="line">  &#125;, </span><br><span class="line">members of UINavigationController: </span><br><span class="line">  _containerView = <span class="number">0xd5dab60</span>, </span><br><span class="line">  _navigationBar = <span class="number">0xd5dad40</span>, </span><br><span class="line">  _navigationBarClass = <span class="number">0x1beb4d8</span>, </span><br><span class="line">  _toolbar = <span class="number">0x0</span>, </span><br><span class="line">  _navigationTransitionView = <span class="number">0xd5d2f10</span>, </span><br><span class="line">  _currentScrollContentInsetDelta = &#123;</span><br><span class="line">    top = <span class="number">0</span>, </span><br><span class="line">    left = <span class="number">0</span>, </span><br><span class="line">    bottom = <span class="number">0</span>, </span><br><span class="line">    right = <span class="number">0</span></span><br><span class="line">  &#125;, </span><br><span class="line">  _previousScrollContentInsetDelta = &#123;</span><br><span class="line">    top = <span class="number">0</span>, </span><br><span class="line">    left = <span class="number">0</span>, </span><br><span class="line">    bottom = <span class="number">0</span>, </span><br><span class="line">    right = <span class="number">0</span></span><br><span class="line">  &#125;, </span><br><span class="line">  ......（此处省略若干成员，课蜜黄蜂注） </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意gdb打印结果中的黑体字，从中我们可以看到，UINavigationController内存中先是存放了父类的实例变量再存放子类的实例变量。最前面的那个isa指针就是在NSObject中所定义的。由于Objective-C中没有多继承，因此其内存布局还是很简单的，就是：最前面有个isa指针，然后父类的实例变量存放在子类的成员变量之前，so easy!!!但还有一个问题，我们很好奇，这个isa是什么呢？对它解引用再打印内容大致如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) p *dialUNC-&gt;isa</span><br><span class="line">$<span class="number">2</span> = &#123;</span><br><span class="line">    isa = <span class="number">0x1bebc30</span>, </span><br><span class="line">    super_class = <span class="number">0x1bebba4</span>, </span><br><span class="line">    name = <span class="number">0xd5dd8d0</span> <span class="string">"?"</span>, </span><br><span class="line">    version = <span class="number">45024840</span>, </span><br><span class="line">    info = <span class="number">223886032</span>, </span><br><span class="line">    instance_size = <span class="number">43102048</span>, </span><br><span class="line">    ivars = <span class="number">0x1bebb7c</span>, </span><br><span class="line">    methodLists = <span class="number">0xd5dab10</span>, </span><br><span class="line">    cache = <span class="number">0x2af0648</span>, </span><br><span class="line">    protocols = <span class="number">0xd584050</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这就是一个Class或者说objc_class结构在内存中的样子。其实在Objective-C2.0之前这个结构的定义是暴露给用户的，但在Objective-C2.0中，水果公司将它隐藏起来了。经过在网上的查找，发现在Objective-C2.0之前其定义大致如下：</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">struct</span> objc_class &#123;</span><br><span class="line">    <span class="title">Class</span> isa;</span><br><span class="line">    </span><br><span class="line">    <span class="title">Class</span> super_class;</span><br><span class="line">    </span><br><span class="line">    <span class="title">const</span> char *name;</span><br><span class="line">    </span><br><span class="line">    <span class="title">long</span> version;</span><br><span class="line">    <span class="title">long</span> <span class="built_in">info</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="title">long</span> instance_size;</span><br><span class="line">    <span class="title">struct</span> objc_ivar_list *ivars;</span><br><span class="line">    <span class="title">struct</span> objc_method_list **methodLists; </span><br><span class="line">    </span><br><span class="line">    <span class="title">struct</span> objc_cache *cache;</span><br><span class="line">    <span class="title">struct</span> objc_protocol_list *protocols;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>因此简单地说，一个objc_class对象包括一个类的：父类定义(super_class), 变量列表，方法列表，还有实现了哪些协议(Protocal)等等。</p>
-<p>　　“等一下”，有人要喊了，”我们刚才在说一个对象里面有一个isa指针，这个指针的定义是objc_class,肿么这个objc-class中还有一个isa？”</p>
-<p>　　在这里有必要跟大家啰嗦一大段文字了：在Objective-C中任何的类定义都是对象。即在程序启动的时候任何类定义都对应于一块内存。在编译的时候，编译器会给每一个类生成一个且只生成一个”描述其定义的对象”,也就是水果公司说的类对象(class object),他是一个单例(singleton), 而我们在C++等语言中所谓的对象，叫做实例对象(instance object)。对于实例对象我们不难理解，但类对象(class object)是干什么吃的呢？我们知道Objective-C是门很动态的语言，因此程序里的所有实例对象(instace objec)都是在运行时由Objective-C的运行时库生成的，而这个类对象(class object)就是运行时库用来创建实例对象(instance object)的依据。</p>
-<p>　　让我们来理一下，到目前为止，我们知道了：任何直接或间接继承了NSObject的类，它的实例对象(instacne objec)中都有一个isa指针，指向它的类对象(class object)。这个类对象(class object)中存储了关于这个实例对象(instace object)所属的类的定义的一切：包括变量，方法，遵守的协议等等。</p>
-<p>　　再回到之前的问题，肿么这个实例对象(instance object)的isa指针指向的类对象(class object)里面还有一个isa呢？</p>
-<p>　　这个类对象(class objec)的isa指向的依然是一个objc-class，它就是“元类对象”(metaclass object)，它和类对象(class object)的关系是这样的:  类对象(class object)中包含了类的实例变量，实例方法的定义，而元类对象(metaclass object)中包括了类的类方法(也就是C++中的静态方法)的定义。类对象和元类对象中水果公司当然还会包含一些其它的东西，以后也可能添加其它的内容，但对于我们了解其内存布局来说，只需要记住：类对象存的是关于实例对象的信息(变量，实例方法等)，而元类对象(metaclass object)中存储的是关于类的信息(类的版本，名字，类方法等)。要注意的是，类对象(class object)和元类对象(metaclass object)的定义都是objc_class结构，其不同仅仅是在用途上，比如其中的方法列表在类对象(instance object)中保存的是实例方法(instance method)，而在元类对象(metaclass object)中则保存的是类方法(class method)。关于元类对象水果官方文档” The Objective-‐C Programming Language “P29页顶部描述如下：</p>
-<p>　　Note: The compiler also builds a metaclass object for each class. It describes the class object just as the class object describes instances of the class. But while you can send messages to instances and to the class object, the metaclass object is used only internally by the runtime system. </p>
-<p>　　这一大段文字好像有点绕，那我们来看一个例子。下面我以一个有4层继承关系的类的实例变量的内存布局为例。　继承关系如下：<br>　　<br>    <img src="https://app.yinxiang.com/shard/s39/res/c2c0004f-7702-4978-b2d2-c41482f75344.jpg?resizeSmall&amp;width=846" alt="id"><br>　　<br>　　通过打印D3类的一个实例变量并将那些isa,super_class的地地址记录下来整理得到的关系如下图:</p>
-<p><img src="https://app.yinxiang.com/shard/s39/res/2eaaccde-e5d6-4635-a3c5-982bfaaa0892.png?resizeSmall&amp;width=846" alt="id"></p>
-<p>在这里对上图进行一下解释： 矩形表示对象(object),即一块内存;箭头表示指针，isa即isa指针，super表示super_class指针，这些指针是箭头尾部对象(object)的成员变量，除了“D3实例对象”(最左边的对象)，其它对象都是在程序一启动就创建在在内存中的了而且都是单例(singleton)，类对象(class object)和元类对象(metaclass object)只是用途不一样，其定义都为objc_class结构</p>
-<p>　　D3对象的内存布局为:从前往后为isa,D1的实例变量,D2的实例变量,D3的实例变量。而isa指针指向的内容就是上图中的“D3类对象”。对于上图，任何类C如果直接或间接继承NSObject 或者其就是NSObject,则有如下结论：</p>
-<p>　　<strong>1. 类C的类对象(class object)的super_class都指向了类C父类的类对象(class object), NSObject的类对像的super_class指向0x0</strong></p>
-<p><strong>　　2. 类C的类对象(class object)的isa指针都指向他的元类对象(metaclass object)
-</strong></p>
-<p><strong>　　3. 类C的元类对象(metaclass object)的super_class指针指向父类的元类对象(metaclass object), 例外：NSObject的元类对象(metaclass object)的super_class指向NSObject的类对象(class object).
-</strong></p>
-<p><strong>　　4. 类C的元类对象(metaclass object)的isa指针指都指向NSObject的元类对象(metaclass object)
-</strong><br>　　NSObject的实例对象(虽然它没有实例变量和实例方法但这个对象仍然存在)其super_class指向地址0x0，因为NSObject没有父类, 这满足上面的结论1。　<br>　　NSObject的实例对象的isa指向了NSObject的元类对象(metaclass object)，这满足上面结论2。　　<br>　　NSObject的元类对象(metaclass object)指向了自己，这也满足上面结论4。　　<br>　　但NSObject的元类对象(metaclass object)的super_class指向了NSObject的类对象(class object)，我没有看出什么规律可言或者苹果为什么要这样做，我只能说“Apple just do this, I don’t know why”（如果有人知道，麻烦告诉我一下，多谢）。我认为水果的工程师们只是简单地又将它指向NSObject的类对象(class object)，其实我认为这个super_class指针赋0x0也未尝不可(这样就满足上面的结论3， 因为NSObject没有父类，所以它的metaclass object的super_class指向0x0，我觉得这样更统一。当然只是我的yy罢了)。 </p>
-<p><code>原文地址:http://www.cnblogs.com/csutanyu/archive/2011/12/12/Objective-C_memor_layout.html</code></p>
-<p>　　</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>对象(object)即一块内存，本文要探讨的是一个Objective-C对象在内存的布局(layout)问题，水果的官方文档有说，一个类(class)如果不需要从NSObject继承其某些特定的行为是不用继承NSObject的，这里我将讨论限制在继承了NSObject的类的]]>
-    </summary>
-    
-      <category term="Objective-C" scheme="http://yoursite.com/tags/Objective-C/"/>
-    
-  </entry>
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.jpeg" alt="Wangda" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">Wangda</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">根本没有正确的选择,我们只是努力奋斗,把当初的选择变正确</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-name">分类</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">标签</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="menu-item-icon icon-next-feed"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">2.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、初入宝地-category简介"><span class="nav-number">2.1.</span> <span class="nav-text">1、初入宝地-category简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、连类比事-category和extension"><span class="nav-number">2.2.</span> <span class="nav-text">2、连类比事-category和extension</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、挑灯细览-category真面目"><span class="nav-number">3.</span> <span class="nav-text">3、挑灯细览-category真面目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、追本溯源-category如何加载"><span class="nav-number">4.</span> <span class="nav-text">4、追本溯源-category如何加载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5、旁枝末叶-category和+load方法"><span class="nav-number">4.1.</span> <span class="nav-text">5、旁枝末叶-category和+load方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、触类旁通-category和方法覆盖"><span class="nav-number">5.</span> <span class="nav-text">6、触类旁通-category和方法覆盖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7、更上一层-category和关联对象"><span class="nav-number">6.</span> <span class="nav-text">7、更上一层-category和关联对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">7.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <div class="copyright" >
   
-  <entry>
-    <title><![CDATA[Objective-C消息机制的原理]]></title>
-    <link href="http://yoursite.com/2015/08/17/Objective-C%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E7%9A%84%E5%8E%9F%E7%90%86/"/>
-    <id>http://yoursite.com/2015/08/17/Objective-C消息机制的原理/</id>
-    <published>2015-08-17T00:55:11.000Z</published>
-    <updated>2015-08-17T09:12:10.000Z</updated>
-    <content type="html"><![CDATA[<h3 id="在Objective-C中，message与方法的真正实现是在执行阶段绑定的，而非编译阶段。">在Objective-C中，message与方法的真正实现是在执行阶段绑定的，而非编译阶段。</h3><ul>
-<li>编译器会将消息发送转换成对objc_msgSend方法的调用。</li>
-<li>objc_msgSend方法含两个必要参数：receiver、方法名（即：selector），如：</li>
-<li>[receiver message]，将被转换为：objc_msgSend(receiver, selector)</li>
-<li>objc_msgSend方法也能hold住message的参数，如：</li>
-<li>objc_msgSend(receiver, selector, arg1, arg2, …);</li>
-</ul>
-<h3 id="objc_msgSend方法会做按照顺序进行以下操作，以完成动态绑定">objc_msgSend方法会做按照顺序进行以下操作，以完成动态绑定</h3><ol>
-<li>查找selector所指代的程序（方法的真正实现）。因为不同类对同一方法有不同的实现，所以对方法的真正实现的查找依赖于receiver的类</li>
-<li>调用该实现，并将一系列参数传递过去</li>
-<li>将该实现的返回值作为自己的返回值，返回之</li>
-</ol>
-<h4 id="消息传递的关键是，编译器构建每个类和对象时所采用的数据结构。每个类都包含以下两个必要元素：">消息传递的关键是，编译器构建每个类和对象时所采用的数据结构。每个类都包含以下两个必要元素：</h4><ul>
-<li>一个指向父类的指针</li>
-<li>一个调度表（dispatch table）。该调度表将类的selector与方法的实际内存地址关联起来</li>
-<li>每个对象都有一个指向所属类的指针isa。通过该指针，对象可以找到它所属的类，也就找到了其全部父类，如下图所示：<br><img src="http://dangpu-wordpress.stor.sinaapp.com/uploads/2012/07/iPhone_Message.png" alt="ISA"></li>
-</ul>
-<p>当向一个对象发送消息时，objc_msgSend方法根据对象的isa指针找到对象的类，然后在类的调度表（dispatch table）中查找selector。如果无法找到selector，objc_msgSend通过指向父类的指针找到父类，并在父类的调度表（dispatch table）中查找selector，以此类推直到NSObject类。一旦查找到selector，objc_msgSend方法根据调度表的内存地址调用该实现。 通过这种方式，message与方法的真正实现在执行阶段才绑定。</p>
-<p>为了保证消息发送与执行的效率，系统会将全部selector和使用过的方法的内存地址缓存起来。每个类都有一个独立的缓存，缓存包含有当前类自己的 selector以及继承自父类的selector。查找调度表（dispatch table）前，消息发送系统首先检查receiver对象的缓存。缓存命中的情况下，消息发送（messaging）比直接调用方法（function call）只慢一点点点点。</p>
-<h4 id="关于Selector，什么_是Selector，Selector就是一个字符串，用来表示一个方法。">关于Selector，什么 是Selector，Selector就是一个字符串，用来表示一个方法。</h4><p>在Objective-C中，消息是直到运行的时候才和方法实现绑定的。编译器会把一个消息表达式，</p>
-<p><code>[receiver message]</code></p>
-<p>转换成一个对消息函数objc_msgSend的调用。该函数有两个主要参数：消息接收者和消息对应的方法名字——也就是方法选标：</p>
-<p><code>objc_msgSend(receiver, selector)</code></p>
-<p>同时接收消息中的任意数目的参数：</p>
-<p><code>objc_msgSend(receiver, selector, arg1, arg2, ...)</code><br>该消息函数做了动态绑定所需要的一切：</p>
-<p><strong>它首先找到选标所对应的方法实现。因为不同的类对同一方法可能会有不同的实现，所以找到的方法实现依赖于消息接收者的类型。</strong></p>
-<p><strong>然后将消息接收者对象（指向消息接收者对象的指针）以及方法中指定的参数传给找到的方法实现。</strong></p>
-<p><strong>最后，将方法实现的返回值作为该函数的返回值返回。</strong></p>
-<p><strong>注意：编译器将自动插入调用该消息函数的代码。您无须在代码中显示调用该消息函数。</strong></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<h3 id="在Objective-C中，message与方法的真正实现是在执行阶段绑定的，而非编译阶段。">在Objective-C中，message与方法的真正实现是在执行阶段绑定的，而非编译阶段。</h3><ul>
-<li>编译器会将消息发送转换成对objc_msgSen]]>
-    </summary>
-    
-      <category term="Objective-C" scheme="http://yoursite.com/tags/Objective-C/"/>
-    
-  </entry>
+  &copy; &nbsp;  2014 - 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wangda</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist</a>
+	&nbsp;|&nbsp; 本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</div>
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
   
-  <entry>
-    <title><![CDATA[Hello World]]></title>
-    <link href="http://yoursite.com/2015/08/15/hello-world/"/>
-    <id>http://yoursite.com/2015/08/15/hello-world/</id>
-    <published>2015-08-15T03:36:07.000Z</published>
-    <updated>2015-08-18T06:18:21.000Z</updated>
-    <content type="html"><![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start">Quick Start</h2><h3 id="Create_a_new_post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io]]>
-    </summary>
-    
-      <category term="随笔" scheme="http://yoursite.com/tags/%E9%9A%8F%E7%AC%94/"/>
-    
-  </entry>
   
-</feed>
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"vanday"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+  	  <script type="text/javascript">
+  		var duoshuo_user_ID = vanday
+  	  </script>
+     
+  	<script src="/js/ua-parser.min.js"></script>
+  	<script src="/js/hook-duoshuo.js"></script>
+  
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.1"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.1"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.1" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.1"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.1" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+    });
+  </script>
+
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>

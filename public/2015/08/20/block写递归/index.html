@@ -28,7 +28,7 @@
 
 
 
-  <meta name="keywords" content="UI," />
+  <meta name="keywords" content="Block," />
 
 
 
@@ -39,25 +39,19 @@
   <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
 
 
-<meta name="description" content="UITableView中cell高度计算问题之如何解决类似于微博cell高度问题
-首先我们先确定一下两个函数问题- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-
-- (UITableViewCell *)tableView:(UITableView *)ta">
+<meta name="description" content="123456static int (^sumBlock)(int) = ^ (int num) &amp;#123;    if (num == 0) &amp;#123;        return num;    &amp;#125;    return num + sumBlock(num - 1);&amp;#125;;
+注意，要做到自己调用自己，需要能够准确的在内存中找到 block 的函数入口，因此需要使用 stat">
 <meta property="og:type" content="article">
-<meta property="og:title" content="IOS-UI-Tips(-)之UITabelviewCell-Height">
-<meta property="og:url" content="http://yoursite.com/2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/index.html">
+<meta property="og:title" content="block写递归">
+<meta property="og:url" content="http://yoursite.com/2015/08/20/block写递归/index.html">
 <meta property="og:site_name" content="Vanday的博客">
-<meta property="og:description" content="UITableView中cell高度计算问题之如何解决类似于微博cell高度问题
-首先我们先确定一下两个函数问题- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-
-- (UITableViewCell *)tableView:(UITableView *)ta">
-<meta property="og:updated_time" content="2015-08-18T06:04:35.000Z">
+<meta property="og:description" content="123456static int (^sumBlock)(int) = ^ (int num) &amp;#123;    if (num == 0) &amp;#123;        return num;    &amp;#125;    return num + sumBlock(num - 1);&amp;#125;;
+注意，要做到自己调用自己，需要能够准确的在内存中找到 block 的函数入口，因此需要使用 stat">
+<meta property="og:updated_time" content="2015-08-20T07:37:58.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="IOS-UI-Tips(-)之UITabelviewCell-Height">
-<meta name="twitter:description" content="UITableView中cell高度计算问题之如何解决类似于微博cell高度问题
-首先我们先确定一下两个函数问题- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-
-- (UITableViewCell *)tableView:(UITableView *)ta">
+<meta name="twitter:title" content="block写递归">
+<meta name="twitter:description" content="123456static int (^sumBlock)(int) = ^ (int num) &amp;#123;    if (num == 0) &amp;#123;        return num;    &amp;#125;    return num + sumBlock(num - 1);&amp;#125;;
+注意，要做到自己调用自己，需要能够准确的在内存中找到 block 的函数入口，因此需要使用 stat">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -67,7 +61,7 @@
   };
 </script>
 
-  <title> IOS-UI-Tips(-)之UITabelviewCell-Height | Vanday的博客 </title>
+  <title> block写递归 | Vanday的博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -192,7 +186,7 @@
           
           
             
-              IOS-UI-Tips(-)之UITabelviewCell-Height
+              block写递归
             
           
         </h1>
@@ -201,8 +195,8 @@
       <div class="post-meta">
         <span class="post-time">
           发表于
-          <time itemprop="dateCreated" datetime="2015-08-18T11:36:07+08:00" content="2015-08-18">
-            2015-08-18
+          <time itemprop="dateCreated" datetime="2015-08-20T15:34:42+08:00" content="2015-08-20">
+            2015-08-20
           </time>
         </span>
 
@@ -212,8 +206,8 @@
           
             <span class="post-comments-count">
               &nbsp; | &nbsp;
-              <a href="/2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/" itemprop="commentsCount"></span>
+              <a href="/2015/08/20/block写递归/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/20/block写递归/" itemprop="commentsCount"></span>
               </a>
             </span>
           
@@ -227,18 +221,14 @@
       
 
       
-        <span itemprop="articleBody"><h2 id="UITableView中cell高度计算问题之">UITableView中cell高度计算问题之</h2><p>如何解决类似于微博cell高度问题</p>
-<h3 id="首先我们先确定一下两个函数问题">首先我们先确定一下两个函数问题</h3><pre><code><span class="pp">- <span class="params">(<span class="variable">CGFloat</span>)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView heightForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath
-
-- <span class="params">(<span class="variable">UITableViewCell</span> *)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView cellForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>根据我们一开始学习IOS时候的经验，height肯定是在UITableViewCell前面运行的。<br>实际上height虽说是在cell前面运行的，但是，cell运行完了以后，会再一次调用height,这个height才是cell的最终高度。这也就是说在整个tableview的刷新过程中每一个cell对应的height函数会调用2次,一前一后,这也是今天如何解决不规则cell高度的关键。</p>
-<h3 id="我们拿到数据源_DataArray_执行_[self-tableView_reloadData]会执行">我们拿到数据源 DataArray 执行 [self.tableView reloadData]会执行</h3><pre><code><span class="pp">- <span class="params">(<span class="variable">CGFloat</span>)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView heightForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>这个会遍历数组中的所有object 这个时候我们就可以在这里计算高度了(label、button、imageview)等,然后保存在mode中<br>等循环结束以后会执行</p>
-<pre><code><span class="pp">- <span class="params">(<span class="variable">UITableViewCell</span> *)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView cellForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>最后再调用</p>
-<pre><code><span class="pp">- <span class="params">(<span class="variable">CGFloat</span>)</span>tableView:<span class="params">(<span class="variable">UITableView</span> *)</span>tableView heightForRowAtIndexPath:<span class="params">(<span class="variable">NSIndexPath</span> *)</span>indexPath</span>
-</code></pre><p>现实在UITableView上。有些同学会觉得，运行了2次是不是很麻烦,首先呢 ，我想说的是，你知道这个调用顺序以后 可以优化时间 比如第一次计算高度的时候 就可以保存在模型中。后面2次都可以直接拿过来用。<br>其次,对于文字高度比较好计算，但是对于单张图片的高度 ，这个就有点头疼了。曾经我问过一个朋友，他说服务器会直接反悔image的size 好吧 ，这个有这些数据的朋友们，当我没说。<br>其次呢，没有怎么办呢，这个就是2次运行height函数的好处了。</p>
-<h3 id="对于第一次函数_我们可以下载图片的缩略图以便在后面的计算高度中可以直接使用">对于第一次函数 我们可以下载图片的缩略图以便在后面的计算高度中可以直接使用</h3></span>
+        <span itemprop="articleBody"><figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">static</span> <span class="built_in">int</span> (^sumBlock)(<span class="built_in">int</span>) = ^ (<span class="built_in">int</span> <span class="built_in">num</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">num</span> == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">num</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">num</span> + sumBlock(<span class="built_in">num</span> - <span class="number">1</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>注意，要做到自己调用自己，需要能够准确的在内存中找到 block 的函数入口，因此需要使用 static 修饰符号，其他就没啥了</strong></p>
+<ul>
+<li>每调用一次自己，系统都会开辟一个栈桢记录临时变量和参数</li>
+<li>递归次数过多，会出现栈溢出错误</li>
+<li>移动开发中不建议使用递归算法，现在主线程栈区只有 512K</li>
+</ul>
+</span>
       
     </div>
 
@@ -246,7 +236,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/UI/" rel="tag">#UI</a>
+            <a href="/tags/Block/" rel="tag">#Block</a>
           
         </div>
       
@@ -255,13 +245,11 @@
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/18/深入理解Objective-C：Category/" rel="prev">深入理解Objective-C:Category</a>
-            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/17/Objective-C内存布局/" rel="next">Objective-C内存布局(转)</a>
+              <a href="/2015/08/19/隐藏UInavigationBar下的黑边/" rel="next">隐藏UInavigationBar下的黑边</a>
             
           </div>
         </div>
@@ -276,10 +264,10 @@
 
     <div class="post-spread">
       
-        <div class="ds-share flat" data-thread-key="2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/"
-     data-title="IOS-UI-Tips(-)之UITabelviewCell-Height"
+        <div class="ds-share flat" data-thread-key="2015/08/20/block写递归/"
+     data-title="block写递归"
      data-content=""
-     data-url="http://yoursite.com/2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/">
+     data-url="http://yoursite.com/2015/08/20/block写递归/">
   <div class="ds-share-inline">
     <ul  class="ds-share-icons-16">
 
@@ -309,8 +297,8 @@
         
           <div class="comments" id="comments">
             
-              <div class="ds-thread" data-thread-key="2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/"
-                   data-title="IOS-UI-Tips(-)之UITabelviewCell-Height" data-url="http://yoursite.com/2015/08/18/IOS-UI-Tips-之UITabelviewCell-Height/">
+              <div class="ds-thread" data-thread-key="2015/08/20/block写递归/"
+                   data-title="block写递归" data-url="http://yoursite.com/2015/08/20/block写递归/">
               </div>
             
           </div>
@@ -399,7 +387,7 @@
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#UITableView中cell高度计算问题之"><span class="nav-number">1.</span> <span class="nav-text">UITableView中cell高度计算问题之</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#首先我们先确定一下两个函数问题"><span class="nav-number">1.1.</span> <span class="nav-text">首先我们先确定一下两个函数问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#我们拿到数据源_DataArray_执行_[self-tableView_reloadData]会执行"><span class="nav-number">1.2.</span> <span class="nav-text">我们拿到数据源 DataArray 执行 [self.tableView reloadData]会执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于第一次函数_我们可以下载图片的缩略图以便在后面的计算高度中可以直接使用"><span class="nav-number">1.3.</span> <span class="nav-text">对于第一次函数 我们可以下载图片的缩略图以便在后面的计算高度中可以直接使用</span></a></li></ol></li></ol></div>
+              <p class="post-toc-empty">此文章未包含目录</p>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
