@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Vanday的博客
+title: ivanda的博客
 subtitle:
 description: 根本没有正确的选择,我们只是努力奋斗,把当初的选择变正确
 author: Wangda
@@ -69,4 +69,4 @@ theme: next
 ## Docs: http://hexo.io/docs/deployment.html
 deploy: 
   type: git
-  repo: git@github.com:vanday/vanday.github.io.git
+  repo: git@github.com:ivanda/ivanda.github.io.git
